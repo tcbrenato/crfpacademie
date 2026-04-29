@@ -36,10 +36,6 @@ export default function CommunautePage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f5f5f5' }}>
-
-      {/* NAVBAR */}
-      <nav style={{ backgroundColor: '#96121c' }} className="w-full shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" className="text-red-100 hover:text-white transition-colors">
               <ArrowLeft size={20} />
