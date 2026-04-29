@@ -1,28 +1,40 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, MessageSquare, ThumbsUp, Users, Search, Plus } from 'lucide-react'
+import { BookOpen, Calendar, ShoppingBag, TrendingUp, ChevronRight, Star, MessageSquare } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
-const categories = ['Tous', 'Marketing', 'Finance', 'Ressources', 'Temoignage', 'Questions', 'Technologie']
-
-export default function CommunautePage() {
+export default function DashboardPage() {
+  const router = useRouter()
+  const [user, setUser] = useState(null)
+  const [cours, setCours] = useState([])
   const [posts, setPosts] = useState([])
+  const [evenements, setEvenements] = useState([])
   const [loading, setLoading] = useState(true)
-  const [recherche, setRecherche] = useState('')
-  const [categorieActive, setCategorieActive] = useState('Tous')
 
   useEffect(() => {
-    fetchPosts()
-  }, [categorieActive])
+    const userData = localStorage.getItem('user')
+    if (!userData) {
+      router.push('/login')
+      return
+    }
+    setUser(JSON.parse(userData))
+    fetchData()
+  }, [])
 
-  const fetchPosts = async () => {
-    setLoading(true)
+  const fetchData = async () => {
     try {
-      const params = new URLSearchParams()
-      if (categorieActive !== 'Tous') params.append('categorie', categorieActive)
-      const res = await fetch(`/api/posts?${params}`)
-      const data = await res.json()
-      setPosts(data.posts || [])
+      const [coursRes, postsRes, evRes] = await Promise.all([
+        fetch('/api/cours'),
+        fetch('/api/posts'),
+        fetch('/api/evenements'),
+      ])
+      const coursData = await coursRes.json()
+      const postsData = await postsRes.json()
+      const evData = await evRes.json()
+      setCours(coursData.cours?.slice(0, 3) || [])
+      setPosts(postsData.posts?.slice(0, 2) || [])
+      setEvenements(evData.evenements?.slice(0, 2) || [])
     } catch (err) {
       console.error(err)
     } finally {
@@ -30,150 +42,215 @@ export default function CommunautePage() {
     }
   }
 
-  const postsFiltres = posts.filter(p =>
-    p.titre.toLowerCase().includes(recherche.toLowerCase())
-  )
+  if (!user) return null
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f5f5f5' }}>
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-red-100 hover:text-white transition-colors">
-              <ArrowLeft size={20} />
-            </Link>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-sm flex items-center justify-center" style={{ backgroundColor: '#ffffff20' }}>
-                <span className="text-white font-bold text-sm">CRF</span>
+      <div className="max-w-7xl mx-auto px-6 py-10">
+
+        {/* BIENVENUE */}
+        <div className="rounded-2xl p-8 mb-8 flex items-center justify-between" style={{ backgroundColor: '#0D0D0D', border: '1px solid #222' }}>
+          <div>
+            <h1 className="text-2xl font-bold text-white mb-1">Bonjour, {user.nom}</h1>
+            <p className="text-gray-400">Bienvenue sur votre espace de formation CRFP Academie</p>
+            <div className="flex items-center gap-4 mt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#96121c25' }}>
+                  <Star size={16} style={{ color: '#96121c' }} />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-sm">{user.points || 0} pts</p>
+                  <p className="text-gray-500 text-xs">Points</p>
+                </div>
               </div>
-              <div>
-                <span className="text-white font-bold text-lg">CRFP</span>
-                <span style={{ color: '#f0e8c8' }} className="font-bold text-lg"> Academie</span>
+              <div style={{ width: 1, height: 30, backgroundColor: '#333' }} />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#9b8e5625' }}>
+                  <TrendingUp size={16} style={{ color: '#9b8e56' }} />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-sm">Niveau {user.niveau || 1}</p>
+                  <p className="text-gray-500 text-xs">Votre niveau</p>
+                </div>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-red-100 hover:text-white text-sm font-medium px-4 py-2">Connexion</Link>
-            <Link href="/register" className="text-sm font-semibold px-5 py-2 rounded-lg" style={{ backgroundColor: '#9b8e56', color: '#fff' }}>
-              Commencer
-            </Link>
-          </div>
+          <Link href="/cours" className="hidden md:flex items-center gap-2 text-white font-semibold px-6 py-3 rounded-xl hover:opacity-90 transition-opacity flex-shrink-0" style={{ backgroundColor: '#96121c' }}>
+            Voir les formations
+            <ChevronRight size={18} />
+          </Link>
         </div>
-      </nav>
 
-      {/* HERO */}
-      <div className="px-6 py-12" style={{ backgroundColor: '#96121c' }}>
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-3">Communaute</h1>
-          <p className="text-red-100 text-lg">Echangez, apprenez et grandissez ensemble</p>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-10">
-
-        {/* STATS */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        {/* STATS RAPIDES */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: Users, label: 'Membres actifs', value: posts.length > 0 ? '500+' : '0' },
-            { icon: MessageSquare, label: 'Discussions', value: posts.length },
-            { icon: ThumbsUp, label: 'Interactions', value: posts.reduce((acc, p) => acc + p.likes, 0) },
-          ].map(({ icon: Icon, label, value }, i) => (
-            <div key={i} className="rounded-xl p-5 flex items-center gap-4" style={{ backgroundColor: '#0D0D0D' }}>
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#96121c25' }}>
-                <Icon size={22} style={{ color: '#96121c' }} />
+            { icon: BookOpen, label: 'Formations', value: cours.length, color: '#96121c', href: '/cours' },
+            { icon: MessageSquare, label: 'Communaute', value: posts.length, color: '#9b8e56', href: '/communaute' },
+            { icon: Calendar, label: 'Evenements', value: evenements.length, color: '#96121c', href: '/evenements' },
+            { icon: ShoppingBag, label: 'Marketplace', value: '0', color: '#9b8e56', href: '/marketplace' },
+          ].map(({ icon: Icon, label, value, color, href }, i) => (
+            <Link href={href} key={i} className="rounded-xl p-5 flex items-center gap-4 hover:opacity-90 transition-opacity" style={{ backgroundColor: '#0D0D0D' }}>
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${color}25` }}>
+                <Icon size={22} style={{ color }} />
               </div>
               <div>
                 <p className="text-white font-bold text-xl">{value}</p>
-                <p className="text-gray-400 text-sm">{label}</p>
+                <p className="text-gray-400 text-xs">{label}</p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
-        <div className="grid md:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-3 gap-8">
 
-          {/* SIDEBAR */}
-          <div className="md:col-span-1 space-y-4">
-            <div className="rounded-xl p-5" style={{ backgroundColor: '#0D0D0D' }}>
-              <h3 className="text-white font-semibold mb-4">Categories</h3>
-              <div className="space-y-2">
-                {categories.map((cat, i) => (
-                  <button key={i} onClick={() => setCategorieActive(cat)} className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors" style={{ backgroundColor: categorieActive === cat ? '#96121c' : '#1a1a1a', color: categorieActive === cat ? '#fff' : '#9ca3af' }}>
-                    {cat}
-                  </button>
-                ))}
+          {/* COLONNE PRINCIPALE */}
+          <div className="md:col-span-2 space-y-8">
+
+            {/* FORMATIONS */}
+            <div className="rounded-xl p-6" style={{ backgroundColor: '#0D0D0D' }}>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <BookOpen size={20} style={{ color: '#96121c' }} />
+                  <h2 className="text-white font-bold text-lg">Formations disponibles</h2>
+                </div>
+                <Link href="/cours" className="text-xs font-semibold hover:opacity-80" style={{ color: '#9b8e56' }}>Voir tout</Link>
               </div>
+              {loading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-lg animate-pulse" style={{ backgroundColor: '#1a1a1a' }} />)}
+                </div>
+              ) : cours.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 text-sm">Aucune formation disponible pour le moment</p>
+                  <Link href="/cours" className="text-xs font-semibold mt-2 inline-block" style={{ color: '#9b8e56' }}>Voir le catalogue</Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {cours.map((c, i) => (
+                    <div key={i} className="p-4 rounded-lg flex items-center justify-between" style={{ backgroundColor: '#1a1a1a' }}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#96121c25' }}>
+                          <BookOpen size={18} style={{ color: '#96121c' }} />
+                        </div>
+                        <div>
+                          <p className="text-white font-semibold text-sm">{c.titre}</p>
+                          <p className="text-gray-500 text-xs">{c.categorie} — {c.niveau} — {c.duree}</p>
+                        </div>
+                      </div>
+                      <Link href="/cours" className="text-xs font-semibold px-3 py-1.5 rounded-lg hover:opacity-90" style={{ backgroundColor: '#96121c', color: '#fff' }}>
+                        Acceder
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* DISCUSSIONS */}
+            <div className="rounded-xl p-6" style={{ backgroundColor: '#0D0D0D' }}>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <MessageSquare size={20} style={{ color: '#9b8e56' }} />
+                  <h2 className="text-white font-bold text-lg">Discussions recentes</h2>
+                </div>
+                <Link href="/communaute" className="text-xs font-semibold hover:opacity-80" style={{ color: '#9b8e56' }}>Voir tout</Link>
+              </div>
+              {loading ? (
+                <div className="space-y-3">
+                  {[1, 2].map(i => <div key={i} className="h-16 rounded-lg animate-pulse" style={{ backgroundColor: '#1a1a1a' }} />)}
+                </div>
+              ) : posts.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 text-sm">Aucune discussion pour le moment</p>
+                  <Link href="/communaute" className="text-xs font-semibold mt-2 inline-block" style={{ color: '#9b8e56' }}>Rejoindre la communaute</Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {posts.map((post, i) => (
+                    <div key={i} className="flex items-start gap-4 p-4 rounded-lg" style={{ backgroundColor: '#1a1a1a' }}>
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style={{ backgroundColor: '#96121c' }}>
+                        {post.users?.nom?.charAt(0) || 'M'}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-semibold text-sm mb-1">{post.titre}</p>
+                        <div className="flex items-center gap-3">
+                          <span className="text-gray-500 text-xs">{post.users?.nom || 'Membre'}</span>
+                          <span className="flex items-center gap-1 text-xs" style={{ color: '#9b8e56' }}>
+                            <Star size={11} />
+                            {post.likes}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* POSTS */}
-          <div className="md:col-span-3 space-y-4">
+          {/* COLONNE DROITE */}
+          <div className="space-y-6">
 
-            {/* SEARCH + BOUTON */}
-            <div className="flex items-center gap-4 mb-6">
-              <div className="relative flex-1">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Rechercher une discussion..."
-                  value={recherche}
-                  onChange={(e) => setRecherche(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-xl outline-none text-sm"
-                  style={{ backgroundColor: '#0D0D0D', color: '#fff', border: '1px solid #333' }}
-                />
+            {/* EVENEMENTS */}
+            <div className="rounded-xl p-6" style={{ backgroundColor: '#0D0D0D' }}>
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <Calendar size={18} style={{ color: '#9b8e56' }} />
+                  <h2 className="text-white font-bold">Evenements a venir</h2>
+                </div>
+                <Link href="/evenements" className="text-xs font-semibold hover:opacity-80" style={{ color: '#9b8e56' }}>Voir tout</Link>
               </div>
-              <Link href="/login" className="flex items-center gap-2 text-white font-semibold px-5 py-3 rounded-xl flex-shrink-0" style={{ backgroundColor: '#96121c' }}>
-                <Plus size={18} />
-                Nouvelle discussion
-              </Link>
-            </div>
-
-            {loading ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="rounded-xl h-40 animate-pulse" style={{ backgroundColor: '#0D0D0D' }} />
-                ))}
-              </div>
-            ) : postsFiltres.length === 0 ? (
-              <div className="rounded-xl p-12 text-center" style={{ backgroundColor: '#0D0D0D' }}>
-                <MessageSquare size={48} className="mx-auto mb-4" style={{ color: '#333' }} />
-                <p className="text-gray-400 font-semibold">Aucune discussion pour le moment</p>
-                <p className="text-gray-600 text-sm mt-2">Soyez le premier a lancer une discussion</p>
-                <Link href="/login" className="inline-flex items-center gap-2 mt-4 text-white text-sm font-semibold px-6 py-3 rounded-lg" style={{ backgroundColor: '#96121c' }}>
-                  <Plus size={16} />
-                  Creer une discussion
-                </Link>
-              </div>
-            ) : (
-              postsFiltres.map((post) => (
-                <div key={post.id} className="rounded-xl p-6 hover:shadow-lg transition-shadow" style={{ backgroundColor: '#0D0D0D', border: '1px solid #222' }}>
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm flex-shrink-0" style={{ backgroundColor: '#96121c' }}>
-                        {post.users?.nom?.charAt(0) || 'M'}
+              {loading ? (
+                <div className="space-y-3">
+                  {[1, 2].map(i => <div key={i} className="h-16 rounded-lg animate-pulse" style={{ backgroundColor: '#1a1a1a' }} />)}
+                </div>
+              ) : evenements.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-gray-500 text-sm">Aucun evenement prevu</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {evenements.map((ev, i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: '#1a1a1a' }}>
+                      <div className="w-12 h-12 rounded-lg flex flex-col items-center justify-center flex-shrink-0" style={{ backgroundColor: '#96121c' }}>
+                        <span className="text-white font-bold text-sm leading-none">{new Date(ev.date).getDate()}</span>
+                        <span className="text-red-200 text-xs">{new Date(ev.date).toLocaleDateString('fr-FR', { month: 'short' })}</span>
                       </div>
                       <div>
-                        <p className="text-white font-semibold text-sm">{post.users?.nom || 'Membre'}</p>
-                        <p className="text-gray-500 text-xs">{post.users?.role || 'Membre'} · {new Date(post.created_at).toLocaleDateString('fr-FR')}</p>
+                        <p className="text-white text-xs font-semibold leading-tight">{ev.titre}</p>
+                        <p className="text-gray-500 text-xs mt-1">{ev.heure}</p>
                       </div>
                     </div>
-                    <span className="text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0" style={{ backgroundColor: '#9b8e5620', color: '#9b8e56' }}>
-                      {post.categorie}
-                    </span>
-                  </div>
-                  <h3 className="text-white font-bold mb-2">{post.titre}</h3>
-                  <p className="text-gray-400 text-sm leading-relaxed mb-4">{post.contenu}</p>
-                  <div className="flex items-center gap-6 pt-3" style={{ borderTop: '1px solid #1a1a1a' }}>
-                    <button className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors">
-                      <ThumbsUp size={16} />
-                      {post.likes} J aime
-                    </button>
-                    <button className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors">
-                      <MessageSquare size={16} />
-                      Commenter
-                    </button>
-                  </div>
+                  ))}
                 </div>
-              ))
-            )}
+              )}
+            </div>
+
+            {/* MON PROFIL */}
+            <div className="rounded-xl p-6" style={{ backgroundColor: '#0D0D0D' }}>
+              <h2 className="text-white font-bold mb-4">Mon profil</h2>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0" style={{ backgroundColor: '#96121c' }}>
+                  {user.nom?.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-white font-semibold">{user.nom}</p>
+                  <p className="text-gray-400 text-xs">{user.email}</p>
+                  <span className="text-xs px-2 py-1 rounded mt-1 inline-block" style={{ backgroundColor: '#9b8e5620', color: '#9b8e56' }}>
+                    {user.role === 'admin' ? 'Administrateur' : 'Membre'}
+                  </span>
+                </div>
+              </div>
+              <Link href="/profil" className="block text-center text-sm font-semibold py-2 rounded-lg hover:opacity-90 mb-2" style={{ backgroundColor: '#1a1a1a', color: '#9b8e56' }}>
+                Voir mon profil complet
+              </Link>
+              {user.role === 'admin' && (
+                <Link href="/admin" className="block text-center text-sm font-semibold py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: '#96121c', color: '#fff' }}>
+                  Panneau Admin
+                </Link>
+              )}
+            </div>
+
           </div>
         </div>
       </div>
