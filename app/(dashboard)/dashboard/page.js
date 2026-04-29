@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { BookOpen, Calendar, ShoppingBag, TrendingUp, ChevronRight, Star, MessageSquare } from 'lucide-react'
+import { BookOpen, Users, Calendar, ShoppingBag, TrendingUp, ChevronRight, Star, MessageSquare } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export default function DashboardPage() {
@@ -14,10 +14,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
-    if (!userData) {
-      router.push('/login')
-      return
-    }
+    if (!userData) { router.push('/login'); return }
     setUser(JSON.parse(userData))
     fetchData()
   }, [])
@@ -44,33 +41,115 @@ export default function DashboardPage() {
 
   if (!user) return null
 
+  // ===== DASHBOARD ADMIN =====
+  if (user.role === 'admin') {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#f8f9fa' }}>
+        <div className="max-w-7xl mx-auto px-6 py-10">
+
+          {/* BIENVENUE ADMIN */}
+          <div className="rounded-2xl p-8 mb-8 flex items-center justify-between" style={{ backgroundColor: '#96121c' }}>
+            <div>
+              <p className="text-red-200 text-sm font-semibold mb-1">Panneau Administrateur</p>
+              <h1 className="text-2xl font-bold text-white mb-1">Bonjour, {user.nom}</h1>
+              <p className="text-red-100">Gerez votre plateforme CRFP Academie depuis ici</p>
+            </div>
+            <img src="/logocrfp.png" alt="CRF" style={{ height: '60px', width: 'auto', opacity: 0.9 }} />
+          </div>
+
+          {/* STATS ADMIN */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {[
+              { icon: BookOpen, label: 'Formations', value: cours.length, color: '#96121c', href: '/admin/cours' },
+              { icon: Users, label: 'Membres', value: '—', color: '#9b8e56', href: '/admin/membres' },
+              { icon: Calendar, label: 'Evenements', value: evenements.length, color: '#96121c', href: '/admin/evenements' },
+              { icon: ShoppingBag, label: 'Produits', value: '—', color: '#9b8e56', href: '/admin/produits' },
+            ].map(({ icon: Icon, label, value, color, href }, i) => (
+              <Link href={href} key={i} className="rounded-xl p-5 flex items-center gap-4 hover:shadow-md transition-all bg-white" style={{ border: '1px solid #e9ecef' }}>
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${color}15` }}>
+                  <Icon size={22} style={{ color }} />
+                </div>
+                <div>
+                  <p className="font-bold text-xl" style={{ color: '#1a1a2e' }}>{value}</p>
+                  <p className="text-xs" style={{ color: '#6c757d' }}>{label}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* ACTIONS RAPIDES ADMIN */}
+          <h2 className="font-bold text-lg mb-4" style={{ color: '#1a1a2e' }}>Actions rapides</h2>
+          <div className="grid md:grid-cols-2 gap-4 mb-8">
+            {[
+              { titre: 'Ajouter une formation', desc: 'Creer un nouveau cours avec modules et contenu', href: '/admin/cours', color: '#96121c', icon: BookOpen },
+              { titre: 'Creer un evenement', desc: 'Planifier un webinaire ou masterclass', href: '/admin/evenements', color: '#9b8e56', icon: Calendar },
+              { titre: 'Ajouter un produit', desc: 'Mettre en vente une ressource sur la marketplace', href: '/admin/produits', color: '#96121c', icon: ShoppingBag },
+              { titre: 'Gerer les membres', desc: 'Voir et administrer tous les comptes membres', href: '/admin/membres', color: '#9b8e56', icon: Users },
+            ].map(({ titre, desc, href, color, icon: Icon }, i) => (
+              <Link href={href} key={i} className="rounded-2xl p-6 bg-white hover:shadow-md transition-all flex items-start gap-4 group" style={{ border: '1px solid #e9ecef' }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ backgroundColor: `${color}15` }}>
+                  <Icon size={24} style={{ color }} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold mb-1" style={{ color: '#1a1a2e' }}>{titre}</p>
+                  <p className="text-sm" style={{ color: '#6c757d' }}>{desc}</p>
+                </div>
+                <ChevronRight size={18} style={{ color: '#9ca3af' }} className="flex-shrink-0 mt-1" />
+              </Link>
+            ))}
+          </div>
+
+          {/* LIENS RAPIDES */}
+          <div className="grid md:grid-cols-3 gap-4">
+            <Link href="/admin" className="rounded-xl p-5 bg-white hover:shadow-md transition-all text-center" style={{ border: '1px solid #e9ecef' }}>
+              <TrendingUp size={24} className="mx-auto mb-2" style={{ color: '#96121c' }} />
+              <p className="font-bold text-sm" style={{ color: '#1a1a2e' }}>Voir les statistiques</p>
+              <p className="text-xs mt-1" style={{ color: '#6c757d' }}>Tableau de bord complet</p>
+            </Link>
+            <Link href="/cours" className="rounded-xl p-5 bg-white hover:shadow-md transition-all text-center" style={{ border: '1px solid #e9ecef' }}>
+              <BookOpen size={24} className="mx-auto mb-2" style={{ color: '#9b8e56' }} />
+              <p className="font-bold text-sm" style={{ color: '#1a1a2e' }}>Voir le site public</p>
+              <p className="text-xs mt-1" style={{ color: '#6c757d' }}>Apercu des formations</p>
+            </Link>
+            <Link href="/profil" className="rounded-xl p-5 bg-white hover:shadow-md transition-all text-center" style={{ border: '1px solid #e9ecef' }}>
+              <Users size={24} className="mx-auto mb-2" style={{ color: '#96121c' }} />
+              <p className="font-bold text-sm" style={{ color: '#1a1a2e' }}>Mon profil</p>
+              <p className="text-xs mt-1" style={{ color: '#6c757d' }}>Modifier mes informations</p>
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ===== DASHBOARD MEMBRE =====
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f5f5f5' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#f8f9fa' }}>
       <div className="max-w-7xl mx-auto px-6 py-10">
 
         {/* BIENVENUE */}
-        <div className="rounded-2xl p-8 mb-8 flex items-center justify-between" style={{ backgroundColor: '#0D0D0D', border: '1px solid #222' }}>
+        <div className="rounded-2xl p-8 mb-8 flex items-center justify-between bg-white" style={{ border: '1px solid #e9ecef' }}>
           <div>
-            <h1 className="text-2xl font-bold text-white mb-1">Bonjour, {user.nom}</h1>
-            <p className="text-gray-400">Bienvenue sur votre espace de formation CRFP Academie</p>
+            <h1 className="text-2xl font-bold mb-1" style={{ color: '#1a1a2e' }}>Bonjour, {user.nom}</h1>
+            <p style={{ color: '#6c757d' }}>Bienvenue sur votre espace de formation CRFP Academie</p>
             <div className="flex items-center gap-4 mt-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#96121c25' }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#96121c15' }}>
                   <Star size={16} style={{ color: '#96121c' }} />
                 </div>
                 <div>
-                  <p className="text-white font-bold text-sm">{user.points || 0} pts</p>
-                  <p className="text-gray-500 text-xs">Points</p>
+                  <p className="font-bold text-sm" style={{ color: '#1a1a2e' }}>{user.points || 0} pts</p>
+                  <p className="text-xs" style={{ color: '#6c757d' }}>Points</p>
                 </div>
               </div>
-              <div style={{ width: 1, height: 30, backgroundColor: '#333' }} />
+              <div style={{ width: 1, height: 30, backgroundColor: '#e9ecef' }} />
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#9b8e5625' }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#9b8e5615' }}>
                   <TrendingUp size={16} style={{ color: '#9b8e56' }} />
                 </div>
                 <div>
-                  <p className="text-white font-bold text-sm">Niveau {user.niveau || 1}</p>
-                  <p className="text-gray-500 text-xs">Votre niveau</p>
+                  <p className="font-bold text-sm" style={{ color: '#1a1a2e' }}>Niveau {user.niveau || 1}</p>
+                  <p className="text-xs" style={{ color: '#6c757d' }}>Votre niveau</p>
                 </div>
               </div>
             </div>
@@ -81,63 +160,59 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* STATS RAPIDES */}
+        {/* STATS */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
             { icon: BookOpen, label: 'Formations', value: cours.length, color: '#96121c', href: '/cours' },
-            { icon: MessageSquare, label: 'Communaute', value: posts.length, color: '#9b8e56', href: '/communaute' },
+            { icon: Users, label: 'Communaute', value: posts.length, color: '#9b8e56', href: '/communaute' },
             { icon: Calendar, label: 'Evenements', value: evenements.length, color: '#96121c', href: '/evenements' },
             { icon: ShoppingBag, label: 'Marketplace', value: '0', color: '#9b8e56', href: '/marketplace' },
           ].map(({ icon: Icon, label, value, color, href }, i) => (
-            <Link href={href} key={i} className="rounded-xl p-5 flex items-center gap-4 hover:opacity-90 transition-opacity" style={{ backgroundColor: '#0D0D0D' }}>
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${color}25` }}>
+            <Link href={href} key={i} className="rounded-xl p-5 flex items-center gap-4 hover:shadow-md transition-all bg-white" style={{ border: '1px solid #e9ecef' }}>
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${color}15` }}>
                 <Icon size={22} style={{ color }} />
               </div>
               <div>
-                <p className="text-white font-bold text-xl">{value}</p>
-                <p className="text-gray-400 text-xs">{label}</p>
+                <p className="font-bold text-xl" style={{ color: '#1a1a2e' }}>{value}</p>
+                <p className="text-xs" style={{ color: '#6c757d' }}>{label}</p>
               </div>
             </Link>
           ))}
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
-
-          {/* COLONNE PRINCIPALE */}
           <div className="md:col-span-2 space-y-8">
 
             {/* FORMATIONS */}
-            <div className="rounded-xl p-6" style={{ backgroundColor: '#0D0D0D' }}>
+            <div className="rounded-xl p-6 bg-white" style={{ border: '1px solid #e9ecef' }}>
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                   <BookOpen size={20} style={{ color: '#96121c' }} />
-                  <h2 className="text-white font-bold text-lg">Formations disponibles</h2>
+                  <h2 className="font-bold text-lg" style={{ color: '#1a1a2e' }}>Formations disponibles</h2>
                 </div>
-                <Link href="/cours" className="text-xs font-semibold hover:opacity-80" style={{ color: '#9b8e56' }}>Voir tout</Link>
+                <Link href="/cours" className="text-xs font-semibold" style={{ color: '#9b8e56' }}>Voir tout</Link>
               </div>
               {loading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-lg animate-pulse" style={{ backgroundColor: '#1a1a1a' }} />)}
-                </div>
+                <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 rounded-lg animate-pulse" style={{ backgroundColor: '#f8f9fa' }} />)}</div>
               ) : cours.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 text-sm">Aucune formation disponible pour le moment</p>
+                  <p className="text-sm" style={{ color: '#6c757d' }}>Aucune formation disponible</p>
                   <Link href="/cours" className="text-xs font-semibold mt-2 inline-block" style={{ color: '#9b8e56' }}>Voir le catalogue</Link>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {cours.map((c, i) => (
-                    <div key={i} className="p-4 rounded-lg flex items-center justify-between" style={{ backgroundColor: '#1a1a1a' }}>
+                    <div key={i} className="p-4 rounded-xl flex items-center justify-between" style={{ backgroundColor: '#f8f9fa', border: '1px solid #e9ecef' }}>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#96121c25' }}>
+                        <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#96121c15' }}>
                           <BookOpen size={18} style={{ color: '#96121c' }} />
                         </div>
                         <div>
-                          <p className="text-white font-semibold text-sm">{c.titre}</p>
-                          <p className="text-gray-500 text-xs">{c.categorie} — {c.niveau} — {c.duree}</p>
+                          <p className="font-semibold text-sm" style={{ color: '#1a1a2e' }}>{c.titre}</p>
+                          <p className="text-xs" style={{ color: '#6c757d' }}>{c.categorie} — {c.niveau} — {c.duree}</p>
                         </div>
                       </div>
-                      <Link href="/cours" className="text-xs font-semibold px-3 py-1.5 rounded-lg hover:opacity-90" style={{ backgroundColor: '#96121c', color: '#fff' }}>
+                      <Link href={`/cours/${c.id}`} className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style={{ backgroundColor: '#96121c' }}>
                         Acceder
                       </Link>
                     </div>
@@ -147,41 +222,38 @@ export default function DashboardPage() {
             </div>
 
             {/* DISCUSSIONS */}
-            <div className="rounded-xl p-6" style={{ backgroundColor: '#0D0D0D' }}>
+            <div className="rounded-xl p-6 bg-white" style={{ border: '1px solid #e9ecef' }}>
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                   <MessageSquare size={20} style={{ color: '#9b8e56' }} />
-                  <h2 className="text-white font-bold text-lg">Discussions recentes</h2>
+                  <h2 className="font-bold text-lg" style={{ color: '#1a1a2e' }}>Discussions recentes</h2>
                 </div>
-                <Link href="/communaute" className="text-xs font-semibold hover:opacity-80" style={{ color: '#9b8e56' }}>Voir tout</Link>
+                <Link href="/communaute" className="text-xs font-semibold" style={{ color: '#9b8e56' }}>Voir tout</Link>
               </div>
-              {loading ? (
-                <div className="space-y-3">
-                  {[1, 2].map(i => <div key={i} className="h-16 rounded-lg animate-pulse" style={{ backgroundColor: '#1a1a1a' }} />)}
-                </div>
-              ) : posts.length === 0 ? (
+              {posts.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 text-sm">Aucune discussion pour le moment</p>
+                  <p className="text-sm" style={{ color: '#6c757d' }}>Aucune discussion pour le moment</p>
                   <Link href="/communaute" className="text-xs font-semibold mt-2 inline-block" style={{ color: '#9b8e56' }}>Rejoindre la communaute</Link>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {posts.map((post, i) => (
-                    <div key={i} className="flex items-start gap-4 p-4 rounded-lg" style={{ backgroundColor: '#1a1a1a' }}>
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style={{ backgroundColor: '#96121c' }}>
-                        {post.users?.nom?.charAt(0) || 'M'}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-white font-semibold text-sm mb-1">{post.titre}</p>
-                        <div className="flex items-center gap-3">
-                          <span className="text-gray-500 text-xs">{post.users?.nom || 'Membre'}</span>
-                          <span className="flex items-center gap-1 text-xs" style={{ color: '#9b8e56' }}>
-                            <Star size={11} />
-                            {post.likes}
-                          </span>
+                    <Link href={`/communaute/${post.id}`} key={i}>
+                      <div className="flex items-start gap-4 p-4 rounded-xl hover:shadow-sm transition-all" style={{ backgroundColor: '#f8f9fa', border: '1px solid #e9ecef' }}>
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style={{ backgroundColor: '#96121c' }}>
+                          {post.users?.nom?.charAt(0) || 'M'}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm mb-1" style={{ color: '#1a1a2e' }}>{post.titre}</p>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs" style={{ color: '#6c757d' }}>{post.users?.nom || 'Membre'}</span>
+                            <span className="flex items-center gap-1 text-xs" style={{ color: '#9b8e56' }}>
+                              <Star size={11} />{post.likes}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -190,35 +262,29 @@ export default function DashboardPage() {
 
           {/* COLONNE DROITE */}
           <div className="space-y-6">
-
-            {/* EVENEMENTS */}
-            <div className="rounded-xl p-6" style={{ backgroundColor: '#0D0D0D' }}>
+            <div className="rounded-xl p-6 bg-white" style={{ border: '1px solid #e9ecef' }}>
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
                   <Calendar size={18} style={{ color: '#9b8e56' }} />
-                  <h2 className="text-white font-bold">Evenements a venir</h2>
+                  <h2 className="font-bold" style={{ color: '#1a1a2e' }}>Evenements a venir</h2>
                 </div>
-                <Link href="/evenements" className="text-xs font-semibold hover:opacity-80" style={{ color: '#9b8e56' }}>Voir tout</Link>
+                <Link href="/evenements" className="text-xs font-semibold" style={{ color: '#9b8e56' }}>Voir tout</Link>
               </div>
-              {loading ? (
-                <div className="space-y-3">
-                  {[1, 2].map(i => <div key={i} className="h-16 rounded-lg animate-pulse" style={{ backgroundColor: '#1a1a1a' }} />)}
-                </div>
-              ) : evenements.length === 0 ? (
+              {evenements.length === 0 ? (
                 <div className="text-center py-6">
-                  <p className="text-gray-500 text-sm">Aucun evenement prevu</p>
+                  <p className="text-sm" style={{ color: '#6c757d' }}>Aucun evenement prevu</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {evenements.map((ev, i) => (
-                    <div key={i} className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: '#1a1a1a' }}>
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl" style={{ backgroundColor: '#f8f9fa', border: '1px solid #e9ecef' }}>
                       <div className="w-12 h-12 rounded-lg flex flex-col items-center justify-center flex-shrink-0" style={{ backgroundColor: '#96121c' }}>
                         <span className="text-white font-bold text-sm leading-none">{new Date(ev.date).getDate()}</span>
                         <span className="text-red-200 text-xs">{new Date(ev.date).toLocaleDateString('fr-FR', { month: 'short' })}</span>
                       </div>
                       <div>
-                        <p className="text-white text-xs font-semibold leading-tight">{ev.titre}</p>
-                        <p className="text-gray-500 text-xs mt-1">{ev.heure}</p>
+                        <p className="font-semibold text-xs leading-tight" style={{ color: '#1a1a2e' }}>{ev.titre}</p>
+                        <p className="text-xs mt-1" style={{ color: '#6c757d' }}>{ev.heure}</p>
                       </div>
                     </div>
                   ))}
@@ -226,31 +292,22 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* MON PROFIL */}
-            <div className="rounded-xl p-6" style={{ backgroundColor: '#0D0D0D' }}>
-              <h2 className="text-white font-bold mb-4">Mon profil</h2>
+            <div className="rounded-xl p-6 bg-white" style={{ border: '1px solid #e9ecef' }}>
+              <h2 className="font-bold mb-4" style={{ color: '#1a1a2e' }}>Mon profil</h2>
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0" style={{ backgroundColor: '#96121c' }}>
                   {user.nom?.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-white font-semibold">{user.nom}</p>
-                  <p className="text-gray-400 text-xs">{user.email}</p>
-                  <span className="text-xs px-2 py-1 rounded mt-1 inline-block" style={{ backgroundColor: '#9b8e5620', color: '#9b8e56' }}>
-                    {user.role === 'admin' ? 'Administrateur' : 'Membre'}
-                  </span>
+                  <p className="font-semibold" style={{ color: '#1a1a2e' }}>{user.nom}</p>
+                  <p className="text-xs" style={{ color: '#6c757d' }}>{user.email}</p>
+                  <span className="text-xs px-2 py-1 rounded mt-1 inline-block" style={{ backgroundColor: '#9b8e5615', color: '#9b8e56' }}>Membre</span>
                 </div>
               </div>
-              <Link href="/profil" className="block text-center text-sm font-semibold py-2 rounded-lg hover:opacity-90 mb-2" style={{ backgroundColor: '#1a1a1a', color: '#9b8e56' }}>
+              <Link href="/profil" className="block text-center text-sm font-semibold py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: '#f8f9fa', color: '#9b8e56', border: '1px solid #e9ecef' }}>
                 Voir mon profil complet
               </Link>
-              {user.role === 'admin' && (
-                <Link href="/admin" className="block text-center text-sm font-semibold py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: '#96121c', color: '#fff' }}>
-                  Panneau Admin
-                </Link>
-              )}
             </div>
-
           </div>
         </div>
       </div>
