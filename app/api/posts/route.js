@@ -16,14 +16,11 @@ export async function GET(request) {
     }
 
     const { data, error } = await query
-
-    if (error) {
-      return NextResponse.json({ error: 'Erreur lors de la récupération des posts' }, { status: 500 })
-    }
+    if (error) return NextResponse.json({ error: 'Erreur posts' }, { status: 500 })
 
     return NextResponse.json({ posts: data })
 
-  } catch (error) {
+  } catch (err) {
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }
 }
@@ -35,16 +32,30 @@ export async function POST(request) {
     const { data, error } = await supabase
       .from('posts')
       .insert([body])
-      .select()
+      .select(`*, users(nom, role, avatar)`)
       .single()
 
-    if (error) {
-      return NextResponse.json({ error: 'Erreur lors de la création du post' }, { status: 500 })
+    if (error) return NextResponse.json({ error: 'Erreur creation post' }, { status: 500 })
+
+    // Ajouter des points à l'utilisateur
+    if (body.user_id) {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('points')
+        .eq('id', body.user_id)
+        .single()
+
+      if (userData) {
+        await supabase
+          .from('users')
+          .update({ points: userData.points + 10 })
+          .eq('id', body.user_id)
+      }
     }
 
     return NextResponse.json({ post: data }, { status: 201 })
 
-  } catch (error) {
+  } catch (err) {
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }
 }
