@@ -328,15 +328,13 @@ export default function Navbar() {
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
           {/* LOGO */}
-          <Link href={user ? '/dashboard' : '/'} className="logo-wrap">
-            <div className="logo-icon">
-              <span style={{ color: '#fff', fontWeight: 900, fontSize: 11, letterSpacing: '0.02em' }}>CRF</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span className="logo-name">CRFP Académie</span>
-              <span className="logo-sub">Cabinet de Recherche et de Formation - Perfection</span>
-            </div>
-          </Link>
+<Link href={user ? '/dashboard' : '/'} className="logo-wrap">
+  <img
+    src="/logocrfp.png"
+    alt="CRF Perfection"
+    style={{ height: '42px', width: 'auto', objectFit: 'contain' }}
+  />
+</Link>
 
           {/* NAV LINKS */}
           <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
