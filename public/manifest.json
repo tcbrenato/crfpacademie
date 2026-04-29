@@ -1,0 +1,41 @@
+{
+  "name": "CRFP Academie",
+  "short_name": "CRFP",
+  "description": "Plateforme de formation professionnelle — Cabinet de Recherche et de Formation Perfection",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#96121c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logocrfp.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logocrfp.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "lang": "fr",
+  "shortcuts": [
+    {
+      "name": "Formations",
+      "url": "/cours",
+      "description": "Voir les formations"
+    },
+    {
+      "name": "Communaute",
+      "url": "/communaute",
+      "description": "Rejoindre la communaute"
+    },
+    {
+      "name": "Evenements",
+      "url": "/evenements",
+      "description": "Voir les evenements"
+    }
+  ]
+}
